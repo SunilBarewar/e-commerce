@@ -1,6 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 
+const { readFile, writeFile } = require("../util/file.js");
+
 const p = path.join(
   path.dirname(require.main.filename),
   "data",
@@ -8,13 +10,7 @@ const p = path.join(
 );
 
 const getProductsFromFile = (cb) => {
-  fs.readFile(p, (err, fileContent) => {
-    if (err) {
-      cb([]);
-    } else {
-      cb(JSON.parse(fileContent));
-    }
-  });
+  readFile(p, cb);
 };
 
 module.exports = class Product {
@@ -29,9 +25,9 @@ module.exports = class Product {
     this.id = Date.now();
     getProductsFromFile((products) => {
       products.push(this);
-      fs.writeFile(p, JSON.stringify(products), (err) => {
-        console.log(err);
-      });
+      writeFile(p, JSON.stringify(products), () =>
+        console.log(`[${p}] : updated successfully`)
+      );
     });
   }
 
