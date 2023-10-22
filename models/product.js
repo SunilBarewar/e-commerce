@@ -1,70 +1,42 @@
-const fs = require("fs");
-const path = require("path");
-
-const { readFile, writeFile } = require("../util/file.js");
-
-const p = path.join(
-  path.dirname(require.main.filename),
-  "data",
-  "products.json"
-);
-
-const getProductsFromFile = (cb) => {
-  readFile(p, cb);
-};
+const db = require("../util/database.js");
 
 module.exports = class Product {
   constructor(title, imageUrl, description, price, id = null) {
     this.id = id;
     this.title = title;
-    this.imageUrl = imageUrl;
     this.description = description;
     this.price = price;
+    this.imageUrl = imageUrl;
   }
 
   save() {
-    getProductsFromFile((products) => {
-      if (this.id) {
-        const existingProductIndex = products.findIndex(
-          (prod) => prod.id == this.id
-        );
-
-        const updatedProducts = [...products];
-
-        updatedProducts[existingProductIndex] = { ...this };
-
-        writeFile(p, JSON.stringify(updatedProducts), () =>
-          console.log(`[${p}] : updated successfully`)
-        );
-
-        return;
-      }
-      this.id = Date.now();
-      products.push(this);
-      writeFile(p, JSON.stringify(products), () =>
-        console.log(`[${p}] : updated successfully`)
-      );
-    });
+    return db.execute(
+      "INSERT INTO product (title, price,description,imageUrl) VALUES(?,?,?,?)",
+      [this.title, this.price, this.description, this.imageUrl]
+    );
+  }
+  update(id) {
+    const updateQuery =
+      "UPDATE product SET title = ?, description = ?, price = ?, imageUrl = ? WHERE id = ?";
+    const values = [
+      this.title,
+      this.description,
+      this.price,
+      this.imageUrl,
+      this.id,
+    ];
+    return db.execute(updateQuery, values);
+  }
+  static fetchAll() {
+    return db.execute("SELECT * FROM Product;");
   }
 
-  static fetchAll(cb) {
-    getProductsFromFile(cb);
-  }
+  static deleteProduct(id) {
+    const deleteQuery = `DELETE FROM Product WHERE id = ${id}`;
 
-  static deleteProduct(prodId) {
-    getProductsFromFile((products) => {
-      const updatedProducts = products.filter((prod) => prod.id != prodId);
-      writeFile(p, JSON.stringify(updatedProducts), () => {
-        console.log("deleted product successfully");
-      });
-    });
+    return db.execute(deleteQuery);
   }
-  static findById(id, cb) {
-    getProductsFromFile((products) => {
-      const product = products.find((p) => p.id == id);
-
-      cb(product);
-    });
+  static findById(id) {
+    return db.execute(`SELECT * FROM product WHERE id=${id}`);
   }
-  static editProduct(id) {}
 };
