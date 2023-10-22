@@ -1,7 +1,10 @@
 const Product = require("../models/product");
 const Cart = require("../models/cart.js");
-
+const db = require("../util/database");
 exports.getProducts = (req, res, next) => {
+  db.query("select * from account;")
+    .then((res) => console.log(res[0]))
+    .catch((err) => console.log(err));
   Product.fetchAll((products) => {
     res.render("shop/product-list", {
       prods: products,
