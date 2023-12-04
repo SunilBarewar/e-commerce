@@ -1,27 +1,54 @@
-const { Sequelize, DataTypes } = require("sequelize");
+const { getDb } = require("../util/database");
+const { ObjectId } = require("mongodb");
 
-const sequelize = require("../util/database");
+class Product {
+  constructor(title, price, description, imageUrl) {
+    this.title = title;
+    this.price = price;
+    this.description = description;
+    this.imageUrl = imageUrl;
+  }
 
-const Product = sequelize.define("product", {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    allowNull: false,
-    primaryKey: true,
-  },
-  title: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  price: {
-    type: DataTypes.DOUBLE,
-    allowNull: false,
-  },
-  imageUrl: DataTypes.STRING,
-  description: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-});
+  async save() {
+    const db = getDb();
+
+    const product = await db.collection("products").insertOne(this);
+
+    return product;
+  }
+  static async fetchAll() {
+    const db = getDb();
+    const products = await db.collection("products").find({}).toArray();
+    console.log(products);
+    return products;
+  }
+
+  static async findById(prodId) {
+    const db = getDb();
+    return await db
+      .collection("products")
+      .find({ _id: new ObjectId(prodId) })
+      .next();
+  }
+
+  static async deleteProduct(prodId) {
+    const db = getDb();
+
+    return await db
+      .collection("products")
+      .deleteOne({ _id: new ObjectId(prodId) });
+  }
+
+  async update(prodId) {
+    const db = getDb();
+
+    await db.collection("products").updateOne(
+      { _id: new ObjectId(prodId) },
+      {
+        $set: { ...this },
+      }
+    );
+  }
+}
 
 module.exports = Product;
