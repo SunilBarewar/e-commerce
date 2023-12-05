@@ -1,6 +1,5 @@
 const Product = require("../models/product");
-const Cart = require("../models/cart.js");
-const User = require("../models/user");
+const Order = require("../models/order");
 
 exports.getProducts = (req, res, next) => {
   Product.find()
@@ -49,16 +48,15 @@ exports.postCart = async (req, res, next) => {
       return req.user.addToCart(product);
     })
     .then(() => {
-      res.redirect("/cart");
+      res.redirect("/products");
     })
     .catch((err) => console.log(err));
 };
 
 exports.getCart = (req, res, next) => {
   req.user
-    .populate("cart.productId")
+    .populate("cart.product")
     .then((user) => {
-      console.log(user.cart);
       res.render("shop/cart", {
         path: "/cart",
         pageTitle: "Your Cart",
@@ -78,19 +76,31 @@ exports.postCartDeleteProduct = (req, res, next) => {
     .catch((err) => console.log(err));
 };
 exports.getOrders = (req, res, next) => {
-  req.user.getOrders().then((orders) => {
-    console.log(orders.products);
+  Order.find({ user: req.user._id }).then((orders) => {
     res.render("shop/orders", {
       path: "/orders",
       pageTitle: "Your Orders",
       orders,
     });
   });
+
+  // req.user.getOrders().then((orders) => {
+  //   console.log(orders.products);
+
+  // });
 };
 
 exports.postOrder = (req, res, next) => {
   req.user
-    .addOrder()
+    .populate("cart.product")
+    .then((user) => {
+      const order = new Order({ products: user.cart, user: req.user._id });
+
+      return order.save();
+    })
+    .then(() => {
+      return req.user.clearCart();
+    })
     .then(() => {
       res.redirect("/orders");
     })
