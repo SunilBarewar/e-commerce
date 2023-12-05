@@ -1,56 +1,84 @@
-const { getDb } = require("../util/database");
-const { ObjectId } = require("mongodb");
+const mongooes = require("mongoose");
 
-class Product {
-  constructor(title, price, description, imageUrl, id = null, userId) {
-    this.title = title;
-    this.price = price;
-    this.description = description;
-    this.imageUrl = imageUrl;
-    this._id = id ? new ObjectId(id) : null;
-    this.userId = userId;
-  }
+// const { getDb } = require("../util/database");
+// const { ObjectId } = require("mongodb");
+const { Schema } = mongooes;
 
-  async save() {
-    const db = getDb();
+const productSchema = new Schema({
+  title: {
+    type: String,
+    required: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  imageUrl: {
+    type: String,
+    required: true,
+  },
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: "user",
+  },
+});
 
-    const product = await db.collection("products").insertOne(this);
+module.exports = mongooes.model("product", productSchema);
 
-    return product;
-  }
-  static async fetchAll() {
-    const db = getDb();
-    const products = await db.collection("products").find({}).toArray();
-    // console.log(products);
-    return products;
-  }
+// class Product {
+//   constructor(title, price, description, imageUrl, id = null, userId) {
+//     this.title = title;
+//     this.price = price;
+//     this.description = description;
+//     this.imageUrl = imageUrl;
+//     this._id = id ? new ObjectId(id) : null;
+//     this.userId = userId;
+//   }
 
-  static async findById(prodId) {
-    const db = getDb();
-    return await db
-      .collection("products")
-      .find({ _id: new ObjectId(prodId) })
-      .next();
-  }
+//   async save() {
+//     const db = getDb();
 
-  static async deleteProduct(prodId) {
-    const db = getDb();
+//     const product = await db.collection("products").insertOne(this);
 
-    return await db
-      .collection("products")
-      .deleteOne({ _id: new ObjectId(prodId) });
-  }
+//     return product;
+//   }
+//   static async fetchAll() {
+//     const db = getDb();
+//     const products = await db.collection("products").find({}).toArray();
+//     // console.log(products);
+//     return products;
+//   }
 
-  async update(prodId) {
-    const db = getDb();
+//   static async findById(prodId) {
+//     const db = getDb();
+//     return await db
+//       .collection("products")
+//       .find({ _id: new ObjectId(prodId) })
+//       .next();
+//   }
 
-    await db.collection("products").updateOne(
-      { _id: new ObjectId(prodId) },
-      {
-        $set: { ...this },
-      }
-    );
-  }
-}
+//   static async deleteProduct(prodId) {
+//     const db = getDb();
 
-module.exports = Product;
+//     return await db
+//       .collection("products")
+//       .deleteOne({ _id: new ObjectId(prodId) });
+//   }
+
+//   async update(prodId) {
+//     const db = getDb();
+
+//     await db.collection("products").updateOne(
+//       { _id: new ObjectId(prodId) },
+//       {
+//         $set: { ...this },
+//       }
+//     );
+//   }
+// }
+
+// module.exports = Product;

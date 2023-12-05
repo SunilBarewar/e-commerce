@@ -2,9 +2,9 @@ const path = require("path");
 
 const express = require("express");
 const bodyParser = require("body-parser");
+const mongooes = require("mongoose");
 
 const errorController = require("./controllers/error");
-const { mongoConnect } = require("./util/database");
 const app = express();
 
 app.set("view engine", "ejs");
@@ -18,14 +18,10 @@ const User = require("./models/user");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
-mongoConnect(() => {
-  app.listen(3000, () => console.log("Server started Successfully"));
-});
-
 app.use((req, res, next) => {
   User.findById("656dcc23f5e69c065226c747")
     .then((user) => {
-      req.user = new User(user.name, user.email, user._id, user.cart || []);
+      req.user = user;
       next();
     })
     .catch((err) => console.log(err));
@@ -35,3 +31,12 @@ app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 
 app.use(errorController.get404);
+
+mongooes
+  .connect(
+    "mongodb+srv://sunilb:sunilb@cluster0.zfn62gz.mongodb.net/shop?retryWrites=true&w=majority"
+  )
+  .then((result) => {
+    app.listen(3000, () => console.log("Server started Successfully"));
+  })
+  .catch((err) => console.log(err));
