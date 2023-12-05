@@ -3,7 +3,7 @@ const Cart = require("../models/cart.js");
 const User = require("../models/user");
 
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll()
+  Product.find()
     .then((products) => {
       res.render("shop/product-list", {
         prods: products,
@@ -29,7 +29,7 @@ exports.getProduct = (req, res, next) => {
 };
 
 exports.getIndex = (req, res, next) => {
-  Product.fetchAll()
+  Product.find()
     .then((products) => {
       res.render("shop/index", {
         prods: products,
@@ -42,12 +42,12 @@ exports.getIndex = (req, res, next) => {
 
 exports.postCart = async (req, res, next) => {
   const prodId = req.body.productId;
-  const product = await Product.findById(prodId);
   // console.log(prodId, userId);
   // Cart.addProduct(userId, prodId, prodPrice);
-
-  req.user
-    .addToCart(product)
+  Product.findById(prodId)
+    .then((product) => {
+      return req.user.addToCart(product);
+    })
     .then(() => {
       res.redirect("/cart");
     })
@@ -56,12 +56,13 @@ exports.postCart = async (req, res, next) => {
 
 exports.getCart = (req, res, next) => {
   req.user
-    .getCart()
-    .then((products) => {
+    .populate("cart.productId")
+    .then((user) => {
+      console.log(user.cart);
       res.render("shop/cart", {
         path: "/cart",
         pageTitle: "Your Cart",
-        prods: products,
+        prods: user.cart,
       });
     })
     .catch((err) => console.log(err));
@@ -70,7 +71,7 @@ exports.getCart = (req, res, next) => {
 exports.postCartDeleteProduct = (req, res, next) => {
   const prodId = req.params.prodId;
   req.user
-    .removeProductFromCart(prodId)
+    .removeFromCart(prodId)
     .then(() => {
       res.redirect("/cart");
     })
