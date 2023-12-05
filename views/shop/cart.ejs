@@ -1,6 +1,31 @@
 <%- include('../includes/head.ejs') %>
-    </head>
+    <link rel="stylesheet" href="/css/product.css">
+</head>
 
-    <body>
-        <%- include('../includes/navigation.ejs') %>
-        <%- include('../includes/end.ejs') %>
+<body>
+    <%- include('../includes/navigation.ejs') %>
+
+    <main class="cart-container">
+        <% if (prods.length > 0) { %>
+            <div class="cart">
+                <% for (let product of prods) { %>
+                    <article class="cart-item">
+                            <h1 class="cart-product__title"><%= product.title %></h1>
+                        
+                            <h2 class="product__price">$<%= product.price %></h2>
+
+                            <form action="/cart/delete/<%= product._id %>" method="post">
+                                <button class="delete-btn">Delete</button>
+                            </form>
+                    </article>
+                  
+                <% } %>
+            </div>
+            <form action="/order" method="post">
+                <button class="order-btn">Order Now</button>
+            </form>
+        <% } else { %>
+            <h1>No Products in cart!</h1>
+        <% } %>
+    </main>
+<%- include('../includes/end.ejs') %>

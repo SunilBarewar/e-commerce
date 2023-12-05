@@ -2,11 +2,13 @@ const { getDb } = require("../util/database");
 const { ObjectId } = require("mongodb");
 
 class Product {
-  constructor(title, price, description, imageUrl) {
+  constructor(title, price, description, imageUrl, id = null, userId) {
     this.title = title;
     this.price = price;
     this.description = description;
     this.imageUrl = imageUrl;
+    this._id = id ? new ObjectId(id) : null;
+    this.userId = userId;
   }
 
   async save() {
@@ -19,7 +21,7 @@ class Product {
   static async fetchAll() {
     const db = getDb();
     const products = await db.collection("products").find({}).toArray();
-    console.log(products);
+    // console.log(products);
     return products;
   }
 

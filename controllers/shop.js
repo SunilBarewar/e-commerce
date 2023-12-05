@@ -1,5 +1,6 @@
 const Product = require("../models/product");
 const Cart = require("../models/cart.js");
+const User = require("../models/user");
 
 exports.getProducts = (req, res, next) => {
   Product.fetchAll()
@@ -39,27 +40,60 @@ exports.getIndex = (req, res, next) => {
     .catch((err) => console.log(err));
 };
 
-exports.postCart = (req, res, next) => {
+exports.postCart = async (req, res, next) => {
   const prodId = req.body.productId;
-  const prodPrice = req.body.productPrice;
-  const userId = req.params.userId;
-  console.log(prodId, userId);
-  Cart.addProduct(userId, prodId, prodPrice);
-  res.redirect("/cart");
+  const product = await Product.findById(prodId);
+  // console.log(prodId, userId);
+  // Cart.addProduct(userId, prodId, prodPrice);
+
+  req.user
+    .addToCart(product)
+    .then(() => {
+      res.redirect("/cart");
+    })
+    .catch((err) => console.log(err));
 };
 
 exports.getCart = (req, res, next) => {
-  res.render("shop/cart", {
-    path: "/cart",
-    pageTitle: "Your Cart",
+  req.user
+    .getCart()
+    .then((products) => {
+      res.render("shop/cart", {
+        path: "/cart",
+        pageTitle: "Your Cart",
+        prods: products,
+      });
+    })
+    .catch((err) => console.log(err));
+};
+
+exports.postCartDeleteProduct = (req, res, next) => {
+  const prodId = req.params.prodId;
+  req.user
+    .removeProductFromCart(prodId)
+    .then(() => {
+      res.redirect("/cart");
+    })
+    .catch((err) => console.log(err));
+};
+exports.getOrders = (req, res, next) => {
+  req.user.getOrders().then((orders) => {
+    console.log(orders.products);
+    res.render("shop/orders", {
+      path: "/orders",
+      pageTitle: "Your Orders",
+      orders,
+    });
   });
 };
 
-exports.getOrders = (req, res, next) => {
-  res.render("shop/orders", {
-    path: "/orders",
-    pageTitle: "Your Orders",
-  });
+exports.postOrder = (req, res, next) => {
+  req.user
+    .addOrder()
+    .then(() => {
+      res.redirect("/orders");
+    })
+    .catch((err) => console.log(err));
 };
 
 exports.getCheckout = (req, res, next) => {
