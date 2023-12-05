@@ -8,14 +8,14 @@
     <main class="cart-container">
         <% if (prods.length > 0) { %>
             <div class="cart">
-                <% for (let product of prods) { %>
+                <% for (let p of prods) { %>
                     <article class="cart-item">
-                            <h1 class="cart-product__title"><%= product.productId.title %></h1>
+                            <h1 class="cart-product__title"><%= p.product.title %></h1>
                         
-                            <h2 class="product__price">$<%= product.productId.price %></h2>
-                            <h2 class="product__quantity"><%= product.quantity %></h2>
+                            <h2 class="product__price">$<%= p.product.price %></h2>
+                            <h2 class="product__quantity"><%= p.quantity %></h2>
 
-                            <form action="/cart/delete/<%= product.productId._id %>" method="post">
+                            <form action="/cart/delete/<%= p.product._id %>" method="post">
                                 <button class="delete-btn">Delete</button>
                             </form>
                     </article>

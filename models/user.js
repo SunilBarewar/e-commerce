@@ -15,7 +15,7 @@ const userSchema = new Schema({
   cart: {
     type: [
       {
-        productId: { type: Schema.Types.ObjectId, ref: "product" },
+        product: { type: Schema.Types.ObjectId, ref: "product" },
         quantity: { type: Number, default: 0 },
       },
     ],
@@ -24,12 +24,12 @@ const userSchema = new Schema({
 });
 
 userSchema.methods.addToCart = function (product) {
-  const proIndex = this.cart.findIndex((p) => p.productId.equals(product._id));
+  const proIndex = this.cart.findIndex((p) => p.product.equals(product._id));
   let updatedCart = [...this.cart];
   if (proIndex !== -1) {
     updatedCart[proIndex].quantity += 1;
   } else {
-    updatedCart.push({ productId: product._id, quantity: 1 });
+    updatedCart.push({ product: product._id, quantity: 1 });
   }
   this.cart = updatedCart;
   return this.save();
@@ -41,6 +41,10 @@ userSchema.methods.removeFromCart = function (prodId) {
   );
 
   this.cart = updatedCart;
+  return this.save();
+};
+userSchema.methods.clearCart = function () {
+  this.cart = [];
   return this.save();
 };
 module.exports = mongooes.model("user", userSchema);
