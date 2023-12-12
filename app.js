@@ -1,5 +1,5 @@
 const path = require("path");
-
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongooes = require("mongoose");
@@ -33,9 +33,7 @@ app.use(shopRoutes);
 app.use(errorController.get404);
 
 mongooes
-  .connect(
-    "mongodb+srv://sunilb:sunilb@cluster0.zfn62gz.mongodb.net/shop?retryWrites=true&w=majority"
-  )
+  .connect(process.env.MONGO_URL)
   .then((result) => {
     app.listen(3000, () => console.log("Server started Successfully"));
   })
